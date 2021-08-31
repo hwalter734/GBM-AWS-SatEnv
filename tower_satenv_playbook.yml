@@ -86,9 +86,6 @@
           - proto: Tcp
             ports: "{{ sat_eg_tcp }}"
             cidr_ip: 0.0.0.0/0
-          - proto: Udp
-            ports: "{{ sat_eg_udp }}"
-            cidr_ip: 0.0.0.0/0
 
     - name: Create ingress and egress security groups for Capsule instance
       ec2_group:

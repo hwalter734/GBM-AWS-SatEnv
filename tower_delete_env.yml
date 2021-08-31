@@ -29,6 +29,7 @@
         region: "{{ region }}"
         instance_id: "{{ item.instance_id }}"
         state: absent
+        wait: yes
       with_items: "{{ __ec2_info.instances }}"
       when: __ec2_info.instances | length > 0
 

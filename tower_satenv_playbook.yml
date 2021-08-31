@@ -9,6 +9,8 @@
         cidr_block: "{{ vpc_cidr_block }}"
         region: "{{ region }}"
         tenancy: default
+        tags:
+          Name: "{{ vpc_name }}"
       register: __vpc_info
 
     - name: Create internet gateway "{{ igw_name }}"

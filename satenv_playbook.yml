@@ -13,6 +13,8 @@
         aws_secret_key: "{{ aws_secret_key }}"
         region: "{{ region }}"
         tenancy: default
+        tags:
+          Name: "{{ vpc_name }}"
       register: __vpc_info
 
     - name: Create internet gateway "{{ igw_name }}"

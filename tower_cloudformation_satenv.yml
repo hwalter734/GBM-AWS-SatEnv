@@ -18,7 +18,7 @@
     - name: Creating and deploying the initial-config stack
       cloudformation:
         stack_name: sat-config
-        template_body: '{{ lookup("file", "vpc.yml") }}'
+        template_body: '{{ lookup("file", "satellite_env.yml") }}'
         template_parameters: "{{ formatted_data }}"
         capabilities: "CAPABILITY_IAM"
         region: us-east-1

@@ -85,6 +85,8 @@
         aws_access_key: "{{ aws_access_key }}"
         aws_secret_key: "{{ aws_secret_key }}"
         vpc_id: "{{ __vpc_info.vpc.id }}"
+        tags:
+          Name: "{{ item.sg_name }}"
         rules:
           - proto: Tcp
             ports: "{{ item.in_tcp }}"

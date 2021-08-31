@@ -154,7 +154,7 @@
         host: "{{ item.public_dns_name }}"
         port: 22
         delay: 30
-        timeout: 185
+        timeout: 240
       with_items: "{{ __ec2_subnet1.instances }}"
       when: "__ec2_subnet1.instances is defined"
 
@@ -163,7 +163,7 @@
         host: "{{ item.public_dns_name }}"
         port: 22
         delay: 30
-        timeout: 185
+        timeout: 240
       with_items: "{{ __ec2_subnet2.instances }}"
       when: "__ec2_subnet2.instances is defined"
 

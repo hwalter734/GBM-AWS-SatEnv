@@ -63,7 +63,7 @@
             gateway_id: "{{ __igw_info.gateway_id }}"
       register: __route_table_info
 
-    - name: Create ingress security groups for Satellite instance
+    - name: Create ingress and egress security groups for Satellite instance
       ec2_group:
         name: "{{ sat_sg_name }}"
         description: "{{ sat_sg_description }}"
@@ -86,7 +86,7 @@
             ports: "{{ sat_eg_udp }}"
             cidr_ip: 0.0.0.0/0
 
-    - name: Create ingress security groups for Capsule instance 
+    - name: Create ingress and egress security groups for Capsule instance
       ec2_group:
         name: "{{ cap_sg_name }}"
         description: "{{ cap_sg_description }}"

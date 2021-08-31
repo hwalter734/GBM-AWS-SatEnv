@@ -2,8 +2,6 @@
 - name: Playbook to setup a Red Hat Satellite Environment within AWS
   hosts: localhost
   gather_facts: false
-  vars_files:
-    - vars.yml
   tasks:
     - name: Create VPC "{{ vpc.name }}" in region {{ region }}
       ec2_vpc_net:

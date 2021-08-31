@@ -1,0 +1,24 @@
+---
+- name: Deploy environment for use with Red Hat Satellite
+  hosts: localhost
+  tasks:
+    - name: Update the parameters.json file with the provided user information...
+      template:
+        src: parameters.j2
+        dest: parameters.json
+
+    - name: Loading data from parameters.json
+      set_fact:
+        loaded_data: "{{ lookup('file','parameters.json') | from_json }}"
+
+    - name: Formatting data from parameters.json
+      set_fact:
+        formatted_data: "{{ loaded_data | items2dict(key_name='ParameterKey', value_name='ParameterValue') }}"
+
+    - name: Creating and deploying the initial-config stack
+      cloudformation:
+        stack_name: sat-config
+        template_body: '{{ lookup("file", "vpc.yml") }}'
+        template_parameters: "{{ formatted_data }}"
+        capabilities: "CAPABILITY_IAM"
+        region: us-east-1

@@ -1,0 +1,25 @@
+---
+- name: Installing all pre-requisites necessary
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Installing pre-requisites
+      pip:
+        name: "{{ item }}"
+      with_items:
+        - boto
+        - boto3
+
+    - name: Downloading AWS CLI
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        dest: ./awscliv2.zip
+
+    - name: Unpacking the AWS CLI installation file
+      unarchive:
+        remote_src: yes
+        src: ./awscliv2.zip
+        dest: ./aws
+
+    - name: Installing AWS CLI
+      shell: sudo aws/install

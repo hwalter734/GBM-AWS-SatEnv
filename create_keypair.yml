@@ -1,0 +1,14 @@
+---
+- name: Create an Amazon EC2 key pair to allow connection
+  hosts: localhost
+  tasks:
+    - name: Creating Amazon EC2 key pair
+      ec2_key:
+        name: rhel
+        region: us-east-1
+      register: ec2_key_result
+
+    - name: Save private key
+      copy: content="{{ ec2_key_result.key.private_key }}" dest="./rhel.pem" mode=0600
+      when: ec2_key_result.changed
+...

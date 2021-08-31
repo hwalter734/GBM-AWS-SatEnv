@@ -1,0 +1,62 @@
+[
+  {
+    "ParameterKey" : "AmiId",
+    "ParameterValue" : "ami-005b7876121b7244d"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue" : "samplekey"
+  },
+  {
+    "ParameterKey" : "VpcCIDR",
+    "ParameterValue" : "12.0.0.0/16"
+  },
+  {
+    "ParameterKey" : "VpcName",
+    "ParameterValue" : "example1"
+  },
+  {
+    "ParameterKey" : "IgwName",
+    "ParameterValue" : "igw_example1"
+  },
+  {
+    "ParameterKey": "RouteTableName",
+    "ParameterValue" : "rtb_example1"
+  },
+  {
+    "ParameterKey": "PublicSubnet1CIDR",
+    "ParameterValue" : "12.0.1.0/24"
+  },
+  {
+    "ParameterKey": "PublicSubnet2CIDR",
+    "ParameterValue" : "12.0.2.0/24"
+  },
+  {
+    "ParameterKey": "PublicSubnet1Az",
+    "ParameterValue" : "us-east-1a"
+  },
+  {
+    "ParameterKey": "PublicSubnet1AzName",
+    "ParameterValue" : "subnet-us-east-1-1a"
+  },
+  {
+    "ParameterKey": "PublicSubnet2Az",
+    "ParameterValue" : "us-east-1b"
+  },
+  {
+    "ParameterKey": "PublicSubnet2AzName",
+    "ParameterValue" : "subnet-us-east-1-1b"
+  },
+  {
+    "ParameterKey": "RouteTableName",
+    "ParameterValue" : "rtb_example1"
+  },
+  {
+    "ParameterKey": "SatInstanceName",
+    "ParameterValue" : "satinstance"
+  },
+  {
+    "ParameterKey": "CapInstanceName",
+    "ParameterValue" : "capinstance"
+  }
+]

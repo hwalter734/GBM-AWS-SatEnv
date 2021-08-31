@@ -1,0 +1,93 @@
+- name: Delete Red Hat Satellite environment on AWS
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Get ec2 machines info with type "ec2-instance"
+      ec2_instance_info:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        filters:
+          "tag:type": ec2instance
+          instance-state-name: ['running', 'stopped']
+      register: __ec2_info
+
+    - name: Get vpc {{ vpc.name }} info
+      ec2_vpc_net_info:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        filters:
+          "tag:Name": "{{ vpc.name }}"
+      register: __vpc_info
+
+    - name: Get route table info of {{ __vpc_info.vpcs[0].vpc_id }}
+      ec2_vpc_route_table_info:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        filters:
+          vpc-id: "{{ __vpc_info.vpcs[0].vpc_id }}"
+      register: __route_table_info
+
+    - name: Delete ec2 machines with type "ec2-instance"
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        instance_id: "{{ item.instance_id }}"
+        state: absent
+      with_items: "{{ __ec2_info.instances }}"
+      when: __ec2_info.instances | length > 0
+
+    - name: Delete security groups
+      ec2_group:
+        name: "{{ item.sg_name }}"
+        region: "{{ region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        state: absent
+      with_items:
+        - "{{ sat_instance }}"
+        - "{{ cap_instance }}"
+
+    - name: Delete route table "{{ __route_table_info.route_tables[0].id }}"
+      ec2_vpc_route_table:
+        route_table_id: "{{ __route_table_info.route_tables[0].id }}"
+        vpc_id: "{{ __vpc_info.vpcs[0].vpc_id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        lookup: id
+        state: absent
+
+    - name: Delete subnet {{ subnet1.name }} and {{ subnet2.name }}
+      ec2_vpc_subnet:
+        state: absent
+        vpc_id: "{{ __vpc_info.vpcs[0].vpc_id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        cidr: "{{ item }}"
+      with_items:
+        - "{{ subnet1.cidr }}"
+        - "{{ subnet2.cidr }}"
+
+    - name: Delete internet gateway "{{ igw_name }}"
+      ec2_vpc_igw:
+        vpc_id: "{{ __vpc_info.vpcs[0].vpc_id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete VPC "{{ vpc.name }}" in region {{ region }}
+      ec2_vpc_net:
+        name: "{{ vpc.name }}"
+        cidr_block: "{{ vpc.cidr_block }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        state: absent

@@ -1,0 +1,195 @@
+---
+- name: Playbook to setup a Red Hat Satellite Environment within AWS
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Create VPC "{{ vpc.name }}" in region {{ region }}
+      ec2_vpc_net:
+        name: "{{ vpc.name }}"
+        cidr_block: "{{ vpc.cidr_block }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        tenancy: default
+      register: __vpc_info
+
+    - name: Create internet gateway "{{ igw_name }}"
+      ec2_vpc_igw:
+        vpc_id: "{{ __vpc_info.vpc.id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        tags:
+          Name: "{{ igw_name }}"
+        state: present
+      register: __igw_info
+
+    - name: Create subnet {{ subnet1.name }}
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ __vpc_info.vpc.id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        cidr: "{{ subnet1.cidr }}"
+        az: "{{ subnet1.az }}"
+        tags:
+          Name: "{{ subnet1.name }}"
+      register: __subnet1_info
+
+    - name: Create subnet {{ subnet2.name }}
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ __vpc_info.vpc.id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        cidr: "{{ subnet2.cidr }}"
+        az: "{{ subnet2.az }}"
+        tags:
+          Name: "{{ subnet2.name }}"
+      register: __subnet2_info
+
+    - name: Get route table info of {{ __vpc_info.vpc.id }}
+      ec2_vpc_route_table_info:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        filters:
+          vpc-id: "{{ __vpc_info.vpc.id }}"
+      register: __route_table_info
+
+    - name: Set up public subnet route table "{{ __route_table_info.route_tables[0].id }}"
+      ec2_vpc_route_table:
+        route_table_id: "{{ __route_table_info.route_tables[0].id }}"
+        vpc_id: "{{ __vpc_info.vpc.id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        lookup: id
+        subnets:
+          - "{{ subnet1.cidr }}"
+          - "{{ subnet2.cidr }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ __igw_info.gateway_id }}"
+      register: __route_table_info
+
+    - name: Create ingress security groups for Satellite and Capsule instances
+      ec2_group:
+        name: "{{ item.sg_name }}"
+        description: "{{ item.description }}"
+        region: "{{ region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        vpc_id: "{{ __vpc_info.vpc.id }}"
+        rules:
+          - proto: Tcp
+            ports: "{{ item.in_tcp }}"
+            cidr_ip: 0.0.0.0/0
+          - proto: Udp
+            ports: "{{ item.in_udp }}"
+            cidr_ip: 0.0.0.0/0
+        rules_egress:
+          - proto: Tcp
+            ports: "{{ item.eg_tcp }}"
+            cidr_ip: 0.0.0.0/0
+          - proto: Udp
+            ports: "{{ item.eg_udp }}"
+            cidr_ip: 0.0.0.0/0
+      with_items:
+        - "{{ sg_groups }}"
+
+    - name: Creating Amazon EC2 key pair
+      ec2_key:
+        name: "{{ key_name }}"
+        region: "{{ region }}"
+      register: ec2_key_result
+
+    - name: Save private key
+      copy: content="{{ ec2_key_result.key.private_key }}" dest="./{{ key_name }}.pem" mode=0600
+      when: ec2_key_result.changed
+
+    - name: Deploy ec2 machine on {{ subnet1.name }}
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        key_name: "{{ key_name }}"
+        group: "{{ sat_instance.sg_name }}"
+        image: "{{ ami_id }}"
+        instance_type: "{{ sat_instance.size }}"
+        wait: true
+        instance_tags:
+          type: ec2instance
+          Name: "{{ sat_instance.name }}"
+        vpc_subnet_id: "{{ __subnet1_info.subnet.id }}"
+        assign_public_ip: yes
+      register: __ec2_subnet1
+
+    - name: Deploy ec2 machine on {{ subnet2.name }}
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        key_name: "{{ key_name }}"
+        group: "{{ cap_instance.sg_name }}"
+        image: "{{ ami_id }}"
+        instance_type: "{{ cap_instance.size }}"
+        wait: true
+        instance_tags:
+          type: ec2instance
+          Name: "{{ cap_instance.name }}"
+        vpc_subnet_id: "{{ __subnet2_info.subnet.id }}"
+        assign_public_ip: yes
+      register: __ec2_subnet2
+
+    - name: Wait for SSH to come up ec2-{{ subnet1.name }}
+      wait_for:
+        host: "{{ item.public_dns_name }}"
+        port: 22
+        delay: 30
+        timeout: 185
+      with_items: "{{ __ec2_subnet1.instances }}"
+      when: "__ec2_subnet1.instances is defined"
+
+    - name: Wait for SSH to come up ec2-{{ subnet2.name }}
+      wait_for:
+        host: "{{ item.public_dns_name }}"
+        port: 22
+        delay: 30
+        timeout: 185
+      with_items: "{{ __ec2_subnet2.instances }}"
+      when: "__ec2_subnet2.instances is defined"
+
+    - name: Get EC2 instances info
+      ec2_instance_info:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        filters:
+          "tag:Name":
+            - "{{ sat_instance.name }}"
+            - "{{ cap_instance.name }}"
+          instance-state-name: ['running', 'stopped']
+      register: __ec2_machines_info
+
+    - name: Creating volume for the Satellite and Capsule Instance
+      ec2_vol:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        volume_size: "500"
+        device_name: /dev/xvdf
+        volume_type: gp2
+        region: "{{ region }}"
+        instance: "{{ item.instance_id }}"
+        delete_on_termination: true
+      with_items: "{{ __ec2_machines_info.instances }}"
+
+    - name: Refresh inventory to ensure new instances exist in inventory
+      meta: refresh_inventory
+
+- name: Mount filesystem in instances
+  import_playbook: setup_volumes.yml

@@ -1,0 +1,32 @@
+---
+- name: Mount attached volume to instances 
+  hosts: tag_type_ec2instance
+  gather_facts: true
+  remote_user: ec2-user
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Creating XFS filesystem
+      filesystem:
+        dev: "/dev/xvdf"
+        fstype: xfs
+
+    - name: Creating XFS filesystem
+      file:
+        state: directory
+        path: /mnt/satdata
+
+    - name: Mounting volume...
+      mount:
+        path: /mnt/satdata
+        src: /dev/xvdf
+        fstype: xfs
+        state: mounted
+
+    - name: Making xvdf mountable at boot
+      lineinfile:
+        path: /etc/fstab
+        regexp: "/dev/xvdf /mnt/satdata xfs defaults 0 0"
+        line: "/dev/xvdf /mnt/satdata xfs defaults 0 2"
+        state: present

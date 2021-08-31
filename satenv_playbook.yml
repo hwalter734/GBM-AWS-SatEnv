@@ -192,4 +192,4 @@
       meta: refresh_inventory
 
 - name: Mount filesystem in instances
-  import_playbook: setup_volumes.yml
+  import_playbook: setup_volumes_playbook.yml

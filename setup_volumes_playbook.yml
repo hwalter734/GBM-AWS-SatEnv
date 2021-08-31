@@ -4,8 +4,6 @@
   gather_facts: true
   remote_user: ec2-user
   become: true
-  vars_files:
-    - vars.yml
   tasks:
     - name: Creating XFS filesystem
       filesystem:

@@ -27,7 +27,7 @@ cap_instance:
   size: m4.xlarge
 sg_groups:
   - sg_name: satsg1
-    description: Security group with ingress and egress TCP rules for Satellite instance
+    description: Security group with ingress and egress TCP/UDP rules for Satellite instance
     address: "12.0.1.0/24"
     in_tcp: [443, 80, 5646, 5647, 8000, 8140, 9090, 7, 53, 5000, 22]
     in_udp: [7, 53, 67, 69]
@@ -35,7 +35,7 @@ sg_groups:
     eg_udp: []
 
   - sg_name: capsg1
-    description: Security group with ingress Tcp rules for Capsule instance
+    description: Security group with ingress and egress TCP/UDP rules for Capsule instance
     address: "12.0.2.0/24"
     protocol: Tcp
     direction: Inbound

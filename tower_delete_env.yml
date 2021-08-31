@@ -48,7 +48,6 @@
         vpc_id: "{{ __vpc_info.vpcs[0].vpc_id }}"
         region: "{{ region }}"
         lookup: id
-        state: absent
 
     - name: Delete subnet {{ subnet1_name }} and {{ subnet2_name }}
       ec2_vpc_subnet:

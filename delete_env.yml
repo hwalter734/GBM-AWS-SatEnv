@@ -61,7 +61,6 @@
         aws_secret_key: "{{ aws_secret_key }}"
         region: "{{ region }}"
         lookup: id
-        state: absent
 
     - name: Delete subnet {{ subnet1.name }} and {{ subnet2.name }}
       ec2_vpc_subnet:

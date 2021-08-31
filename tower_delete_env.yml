@@ -10,11 +10,11 @@
           instance-state-name: ['running', 'stopped']
       register: __ec2_info
 
-    - name: Get vpc {{ vpc.name }} info
+    - name: Get vpc {{ vpc_name }} info
       ec2_vpc_net_info:
         region: "{{ region }}"
         filters:
-          "tag:Name": "{{ vpc.name }}"
+          "tag:Name": "{{ vpc_name }}"
       register: __vpc_info
 
     - name: Get route table info of {{ __vpc_info.vpcs[0].vpc_id }}
@@ -32,14 +32,14 @@
       with_items: "{{ __ec2_info.instances }}"
       when: __ec2_info.instances | length > 0
 
-    - name: Delete security groups
+    - name: Delete security groups of Satellite and Capsule instances
       ec2_group:
-        name: "{{ item.sg_name }}"
+        name: "{{ item }}"
         region: "{{ region }}"
         state: absent
       with_items:
-        - "{{ sat_instance }}"
-        - "{{ cap_instance }}"
+        - "{{ sat_sg_name }}"
+        - "{{ cap_sg_name }}"
 
     - name: Delete route table "{{ __route_table_info.route_tables[0].id }}"
       ec2_vpc_route_table:
@@ -49,15 +49,15 @@
         lookup: id
         state: absent
 
-    - name: Delete subnet {{ subnet1.name }} and {{ subnet2.name }}
+    - name: Delete subnet {{ subnet1_name }} and {{ subnet2_name }}
       ec2_vpc_subnet:
         vpc_id: "{{ __vpc_info.vpcs[0].vpc_id }}"
         region: "{{ region }}"
         cidr: "{{ item }}"
         state: absent
       with_items:
-        - "{{ subnet1.cidr }}"
-        - "{{ subnet2.cidr }}"
+        - "{{ subnet1_cidr }}"
+        - "{{ subnet2_cidr }}"
 
     - name: Delete internet gateway "{{ igw_name }}"
       ec2_vpc_igw:
@@ -65,9 +65,9 @@
         region: "{{ region }}"
         state: absent
 
-    - name: Delete VPC "{{ vpc.name }}" in region {{ region }}
+    - name: Delete VPC "{{ vpc_name }}" in region {{ region }}
       ec2_vpc_net:
-        name: "{{ vpc.name }}"
-        cidr_block: "{{ vpc.cidr_block }}"
+        name: "{{ vpc_name }}"
+        cidr_block: "{{ vpc_cidr_block }}"
         region: "{{ region }}"
         state: absent

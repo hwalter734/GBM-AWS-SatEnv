@@ -1,5 +1,5 @@
 ---
-- name: Mount attached volume to instances 
+- name: Mount attached volume to instances
   hosts: tag_type_ec2instance
   gather_facts: true
   remote_user: ec2-user

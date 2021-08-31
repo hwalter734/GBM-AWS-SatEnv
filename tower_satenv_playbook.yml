@@ -188,9 +188,3 @@
         instance: "{{ item.instance_id }}"
         delete_on_termination: true
       with_items: "{{ __ec2_machines_info.instances }}"
-
-    - name: Refresh inventory to ensure new instances exist in inventory
-      meta: refresh_inventory
-
-- name: Mount filesystem in instances
-  import_playbook: setup_volumes_playbook.yml

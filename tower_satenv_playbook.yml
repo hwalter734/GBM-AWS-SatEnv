@@ -63,6 +63,8 @@
         routes:
           - dest: 0.0.0.0/0
             gateway_id: "{{ __igw_info.gateway_id }}"
+        tags:
+          Name: "{{ rtb_name }}"
       register: __route_table_info
 
     - name: Create ingress and egress security groups for Satellite instance

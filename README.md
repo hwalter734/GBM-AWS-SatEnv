@@ -7,7 +7,10 @@ This repository includes the necessary files to deploy an environment that suppo
 - **AWS CLI**: You should have aws-cli setup in your system in order to replicate the following repository. Alternatively, you can also specify *aws_access_key* and an *aws_secret_key* variables if you are planning on using Ansible. More info on installing the aws cli [here](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 - **Ansible (Optional)**: More info on installation [here](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) 
 - **Ansible Tower (Optional)**: More info on installation [here](https://docs.ansible.com/ansible-tower/latest/html/quickinstall/index.html) 
-- **SSH Key Pair**: You can create the key pair using Ansible and launching the create\_keypair\_playbook.yml. Alternatively, you can use the following command ```ssh-keygen -m PEM -t rsa -b 4096 nameofyourkey```
+- **SSH Key Pair**: You can create the key pair using Ansible and launching the create\_keypair\_playbook.yml. Alternatively, you can use the following command 
+```
+ssh-keygen -m PEM -t rsa -b 4096 -f nameofyourkey
+```
 # Options for Deployment
 This repository includes the necessary files to deploy the Cloudformation stack in a few ways.
 

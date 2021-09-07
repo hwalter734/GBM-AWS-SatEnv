@@ -14,7 +14,7 @@
         region: "{{ region }}"
         tenancy: default
         tags:
-          Name: "{{ vpc_name }}"
+          Name: "{{ vpc.name }}"
       register: __vpc_info
 
     - name: Create internet gateway "{{ igw_name }}"

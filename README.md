@@ -41,7 +41,7 @@ In case you are using Ansible Tower, you must add your AWS credentials in the **
 Cloudformation works based on stacks, which helps you organize your resources as well as the steps necessary to set up your environment. This also provides the advantage that you can delete your stacks, in case a phase of your development goes wrong, a modification needs to take place or you simply want all items within the stack to be deleted.
 
 # Why use Ansible?
-Ansible is a powerful automation tool that can facilitate your manual tasks in an orderly fashion, while mantaining an easy to read file format (.yml). For those with more experience with Ansible, you can combine both Cloudformation with Ansible or keep the environment working solely with Ansible.
+Ansible is a powerful automation tool that can facilitate your manual tasks in an orderly fashion, while mantaining an easy to read file format **.yml**. For those with more experience with Ansible, you can combine both Cloudformation with Ansible or keep the environment working solely with Ansible.
 
 # Conclusion
 The best method is the one that works best for you and your needs.
